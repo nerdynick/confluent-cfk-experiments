@@ -1,0 +1,49 @@
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Zookeeper
+metadata:
+  name: zookeeper
+  namespace: confluent
+spec:
+  replicas: 1
+  image:
+    application: confluentinc/cp-zookeeper-operator:6.1.0.0
+    init: confluentinc/cp-init-container-operator:6.1.0.0
+  dataVolumeCapacity: 1Gi
+  logVolumeCapacity: 1Gi
+  storageClass:
+    name: local-zk-ephemeral-storage-class
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Kafka
+metadata:
+  name: kafka
+  namespace: confluent
+spec:
+  replicas: 3
+  image:
+    application: confluentinc/cp-server-operator:6.1.0.0
+    init: confluentinc/cp-init-container-operator:6.1.0.0
+  dataVolumeCapacity: 2Gi
+  metricReporter:
+    enabled: false
+  storageClass:
+    name: local-kfk-ephemeral-storage-class
+  listeners:
+      external:
+        externalAccess:
+          type: nodePort
+          nodePort:
+            host: kfk-emp.mycluster.local
+            nodePortOffset: 30000
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: KafkaTopic
+metadata:
+  name: kfk-test-topic
+  namespace: confluent
+spec:
+  replicas: 3
+  partitionCount: 3
+  configs:
+    cleanup.policy: "delete"

@@ -1,0 +1,32 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cfk-load-test
+spec:
+  serviceName: cfk-load-test
+  podManagementPolicy: Parallel
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cfk-load-test
+  template:
+    metadata:
+      labels:
+        app: cfk-load-test
+    spec:
+      nodeSelector:
+        kubernetes.io/arch: amd64
+      containers:
+      - name: cfk-load-test
+        image: confluentinc/cp-kafka:latest
+        command:
+        - /bin/sh
+        - -c
+        - |
+          kafka-producer-perf-test \
+            --producer-props bootstrap.servers=kafka:9092 \
+            --topic kfk-test-topic \
+            --num-records 2400000 \
+            --record-size 2000 \
+            --throughput -1
